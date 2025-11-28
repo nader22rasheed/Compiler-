@@ -98,7 +98,7 @@ jinja_block_content
     ;
 
 assignment_statement
-    : JINJA_SET JINJA_LPAREN JINJA_ID '=' jinja_expression_inner JINJA_RPAREN
+    : JINJA_SET JINJA_LPAREN JINJA_ID EQ jinja_expression_inner JINJA_RPAREN
     ;
 
 jinja_expression
@@ -451,11 +451,11 @@ generalEnclosed
     ;
 
 var_
-    : 'var' css_ws CSS_Variable css_ws CSS_CloseParen css_ws
+    : VAR css_ws CSS_Variable css_ws CSS_CloseParen css_ws
     ;
 
 calc
-    : 'calc' css_ws calcSum CSS_CloseParen css_ws
+    : CALC css_ws calcSum CSS_CloseParen css_ws
     ;
 
 calcSum
