@@ -10,100 +10,103 @@ options {
     tokenVocab = HTMLCSSJinjaLexer;
 }
 
+
+//AST.HTML parser rule
+
 htmlDocument
-    : scriptletOrSeaWs* XML? scriptletOrSeaWs* DTD? scriptletOrSeaWs* htmlElements*
+    : scriptletOrSeaWs* XML? scriptletOrSeaWs* DTD? scriptletOrSeaWs* htmlElements* #htmlDoc
     ;
 
 scriptletOrSeaWs
-    : SCRIPTLET
-    | SEA_WS
+    : SCRIPTLET #scr
+    | SEA_WS #ws
     ;
 
 htmlElements
-    : htmlMisc* htmlElement htmlMisc*
+    : htmlMisc* htmlElement htmlMisc* #htmlElems
     ;
 
 htmlElement
-    : TAG_OPEN TAG_NAME htmlAttribute* (
-        TAG_CLOSE (htmlContent TAG_OPEN TAG_SLASH TAG_NAME TAG_CLOSE)?
-        | TAG_SLASH_CLOSE
-    )
-    | SCRIPTLET
-    | script
-    | style
+    : TAG_OPEN TAG_NAME htmlAttribute*  TAG_CLOSE (htmlContent TAG_OPEN TAG_SLASH TAG_NAME TAG_CLOSE)? #htmlNormalTag
+    | TAG_OPEN TAG_NAME htmlAttribute* TAG_SLASH_CLOSE   #htmlSelfClosing
+    |SCRIPTLET #htmlScriptlet
+    |script #htmlScript
+    |style #htmlStyle
     ;
 
+
 htmlContent
-    : htmlChardata? ((htmlElement | CDATA | htmlComment | jinja_block | jinja_expression ) htmlChardata?)*
+    : htmlChardata? ((htmlElement | CDATA | htmlComment | jinja_block | jinja_expression ) htmlChardata?)* #htmlContentRule
     ;
 
 htmlAttribute
-    : TAG_NAME (TAG_EQUALS attributeValue)?
+    : TAG_NAME (TAG_EQUALS attributeValue)? #htmlAttr
     ;
 
 attributeValue
-    : ATT_WS? ( DOUBLE_QUOTE_START (DQUOTE_TEXT | DQUOTE_JINJA_START (jinja_expression_inner | boolean_expression) JINJA_EXPR_END | DQUOTE_JINJA_BLOCK_START jinja_block_content JINJA_BLOCK_END)* DOUBLE_QUOTE_END
-              | SINGLE_QUOTE_START (SQUOTE_TEXT | SQUOTE_JINJA_START (jinja_expression_inner | boolean_expression) JINJA_EXPR_END | SQUOTE_JINJA_BLOCK_START jinja_block_content JINJA_BLOCK_END)* SINGLE_QUOTE_END
-              | ATTCHARS
-              | HEXCHARS
-              | DECCHARS
-              )
-    ;
+  : ATT_WS? DOUBLE_QUOTE_START (DQUOTE_TEXT | DQUOTE_JINJA_START (jinja_expression_inner | boolean_expression) JINJA_EXPR_END | DQUOTE_JINJA_BLOCK_START jinja_block_content JINJA_BLOCK_END )* DOUBLE_QUOTE_END #attrDouble
+  | ATT_WS? SINGLE_QUOTE_START (SQUOTE_TEXT | SQUOTE_JINJA_START (jinja_expression_inner | boolean_expression) JINJA_EXPR_END | SQUOTE_JINJA_BLOCK_START jinja_block_content JINJA_BLOCK_END )* SINGLE_QUOTE_END #attrSingle
+  | ATT_WS? ATTCHARS #attrChars
+  | ATT_WS? HEXCHARS #attrHex
+  | ATT_WS? DECCHARS #attrDec
+  ;
 
 htmlChardata
-    : HTML_TEXT
-    | SEA_WS
-    ;
+  : HTML_TEXT #htmlText
+  | SEA_WS #htmlWs
+  ;
 
 htmlMisc
-    : htmlComment
-    | SEA_WS
+    : htmlComment #htmlCommentMisc
+    | SEA_WS #htmlMiscWs
     ;
 
+
 htmlComment
-    : HTML_COMMENT
-    | HTML_CONDITIONAL_COMMENT
+    : HTML_COMMENT #htmlCommentNormal
+    | HTML_CONDITIONAL_COMMENT #htmlCommentConditional
     ;
 
 script
-    : SCRIPT_OPEN (SCRIPT_BODY | SCRIPT_SHORT_BODY)
+    : SCRIPT_OPEN (SCRIPT_BODY | SCRIPT_SHORT_BODY) #scriptTag
     ;
 
 style
-    : STYLE_OPEN stylesheet CSS_STYLE_CLOSE
+    : STYLE_OPEN stylesheet CSS_STYLE_CLOSE #styleTag
     ;
+
 
 // Jinja parser rules
 
 statement
-    : jinja_expression
-    | jinja_block
-    | assignment_statement
-    | if_statement
-    | while_statement
+    : jinja_expression #stmtExpr
+    | jinja_block #stmtBlock
+    | assignment_statement #stmtAssign
+    | if_statement #stmtIf
+    | while_statement #stmtWhile
     ;
 
 jinja_block
-    : JINJA_BLOCK_START jinja_block_content JINJA_BLOCK_END JINJA_NEWLINE?
+    : JINJA_BLOCK_START jinja_block_content JINJA_BLOCK_END JINJA_NEWLINE? #jinjaBlock
     ;
 
 jinja_block_content
-    : assignment_statement
-    | if_fragment
-    | elif_fragment
-    | else_fragment
-    | endif_fragment
-    | while_fragment
-    | endwhile_fragment
+    : assignment_statement  #blkAssign
+    | if_fragment #blkIf
+    | elif_fragment #blkElif
+    | else_fragment #blkElse
+    | endif_fragment  #blkEndIf
+    | while_fragment #blkWhile
+    | endwhile_fragment #blkEndWhile
     ;
 
 assignment_statement
-    : JINJA_SET JINJA_LPAREN JINJA_ID EQ jinja_expression_inner JINJA_RPAREN
+    : JINJA_SET JINJA_LPAREN JINJA_ID EQ jinja_expression_inner JINJA_RPAREN #assignStmt
     ;
 
 jinja_expression
-    : JINJA_EXPR_START (jinja_expression_inner | boolean_expression) JINJA_EXPR_END
-    ;
+    : JINJA_EXPR_START (jinja_expression_inner | boolean_expression) JINJA_EXPR_END  #jinjaExpr
+     ;
 
 jinja_expression_inner
     : JINJA_LPAREN jinja_expression_inner JINJA_RPAREN                                               #eqPar
@@ -123,10 +126,10 @@ boolean_expression
     ;
 
 if_statement
-    : if_fragment code_block (elif_statement | else_statement)? endif_fragment
+    : if_fragment code_block (elif_statement | else_statement)? endif_fragment  #ifStmt
     ;
 
-elif_statement: elif_fragment code_block (elif_statement | else_statement)? ;
+elif_statement: elif_fragment code_block (elif_statement | else_statement)? #elifStmt  ;
 
 else_statement: else_fragment code_block ;
 
@@ -146,12 +149,15 @@ while_fragment: JINJA_WHILE JINJA_LPAREN boolean_expression JINJA_RPAREN JINJA_N
 
 endwhile_fragment: JINJA_ENDWHILE JINJA_NEWLINE?;
 
-// CSS parser rules
+
+
+
+// AST.CSS parser rules
 
 stylesheet
     : css_ws (charset ( CSS_Comment | CSS_Space | CSS_Cdo | CSS_Cdc)*)* (imports ( CSS_Comment | CSS_Space | CSS_Cdo | CSS_Cdc)*)* (
         namespace_ ( CSS_Comment | CSS_Space | CSS_Cdo | CSS_Cdc)*
-    )* (nestedStatement ( CSS_Comment | CSS_Space | CSS_Cdo | CSS_Cdc)*)* EOF
+    )* (nestedStatement ( CSS_Comment | CSS_Space | CSS_Cdo | CSS_Cdc)*)* EOF #stylesheetRule
     ;
 
 charset
@@ -176,16 +182,16 @@ namespacePrefix
     ;
 
 media
-    : CSS_Media css_ws mediaQueryList groupRuleBody css_ws
+    : CSS_Media css_ws mediaQueryList groupRuleBody css_ws #mediaRule
     ;
 
 mediaQueryList
-    : (mediaQuery ( CSS_Comma css_ws mediaQuery)*)? css_ws
+    : (mediaQuery ( CSS_Comma css_ws mediaQuery)*)? css_ws #mediaQueryListRule
     ;
 
 mediaQuery
-    : (CSS_MediaOnly | CSS_Not)? css_ws mediaType css_ws (CSS_And css_ws mediaExpression)*
-    | mediaExpression ( CSS_And css_ws mediaExpression)*
+    : (CSS_MediaOnly | CSS_Not)? css_ws mediaType css_ws (CSS_And css_ws mediaExpression)* #mediaTypeQuery
+    | mediaExpression ( CSS_And css_ws mediaExpression)* #mediaExprQuery
     ;
 
 mediaType
@@ -201,7 +207,7 @@ mediaFeature
     ;
 
 page
-    : CSS_Page css_ws pseudoPage? CSS_OpenBrace css_ws declaration? (CSS_SemiColon css_ws declaration?)* CSS_CloseBrace css_ws
+    : CSS_Page css_ws pseudoPage? CSS_OpenBrace css_ws declaration? (CSS_SemiColon css_ws declaration?)* CSS_CloseBrace css_ws #pageRule
     ;
 
 pseudoPage
@@ -209,11 +215,11 @@ pseudoPage
     ;
 
 selectorGroup
-    : selector (CSS_Comma css_ws selector)*
+    : selector (CSS_Comma css_ws selector)* #selectorGroupRule
     ;
 
 selector
-    : simpleSelectorSequence css_ws (combinator simpleSelectorSequence css_ws)*
+    : simpleSelectorSequence css_ws (combinator simpleSelectorSequence css_ws)* #selectorRule
     ;
 
 combinator
@@ -224,8 +230,8 @@ combinator
     ;
 
 simpleSelectorSequence
-    : (typeSelector | universal) (CSS_Hash | className | attrib | pseudo | negation)*
-    | ( CSS_Hash | className | attrib | pseudo | negation)+
+    : (typeSelector | universal) (CSS_Hash | className | attrib | pseudo | negation)*  #simpleSeq1
+    | ( CSS_Hash | className | attrib | pseudo | negation)+  #simpleSeq2
     ;
 
 typeSelector
@@ -262,11 +268,11 @@ pseudo
     ;
 
 functionalPseudo
-    : CSS_Function_ css_ws css_expression CSS_CloseParen
+    : CSS_Function_ css_ws css_expression CSS_CloseParen #funcPseudo
     ;
 
 css_expression
-    : (( CSS_Plus | CSS_Minus | CSS_Dimension | CSS_Dimension | CSS_Number | CSS_String_ | css_ident) css_ws)+
+    : (( CSS_Plus | CSS_Minus | CSS_Dimension | CSS_Dimension | CSS_Number | CSS_String_ | css_ident) css_ws)+ #cssExpr
     ;
 
 negation
@@ -302,7 +308,7 @@ ruleset
     ;
 
 declarationList
-    : (CSS_SemiColon css_ws)* declaration css_ws (CSS_SemiColon css_ws declaration?)*
+    : (CSS_SemiColon css_ws)* declaration css_ws (CSS_SemiColon css_ws declaration?)* #declList
     ;
 
 declaration
@@ -311,15 +317,15 @@ declaration
     ;
 
 prio
-    : CSS_Important css_ws
+    : CSS_Important css_ws #prioRule
     ;
 
 value
-    : (any_ | block | CSS_AtKeyword css_ws)+
+    : (any_ | block | CSS_AtKeyword css_ws)+ #valueRule
     ;
 
 expr
-    : term (operator_? term)*
+    : term (operator_? term)* #exprRule
     ;
 
 term
@@ -339,11 +345,11 @@ term
     ;
 
 function_
-    : CSS_Function_ css_ws expr CSS_CloseParen css_ws
+    : CSS_Function_ css_ws expr CSS_CloseParen css_ws #funcRule
     ;
 
 dxImageTransform
-    : CSS_DxImageTransform css_ws expr CSS_CloseParen css_ws
+    : CSS_DxImageTransform css_ws expr CSS_CloseParen css_ws #dxTransform
     ;
 
 hexcolor
@@ -351,70 +357,73 @@ hexcolor
     ;
 
 css_number
-    : (CSS_Plus | CSS_Minus)? CSS_Number
+    : (CSS_Plus | CSS_Minus)? CSS_Number #cssNum
     ;
 
 css_percentage
-    : (CSS_Plus | CSS_Minus)? CSS_Percentage
+    : (CSS_Plus | CSS_Minus)? CSS_Percentage #cssPercent
     ;
 
 css_dimension
-    : (CSS_Plus | CSS_Minus)? CSS_Dimension
+    : (CSS_Plus | CSS_Minus)? CSS_Dimension  #cssDim
     ;
 
 any_
-    : css_ident css_ws
-    | css_number css_ws
-    | css_percentage css_ws
-    | CSS_Dimension css_ws
-    | CSS_Dimension css_ws
-    | CSS_String_ css_ws
-    | css_url css_ws
-    | CSS_Hash css_ws
-    | CSS_UnicodeRange css_ws
-    | CSS_Includes css_ws
-    | CSS_DashMatch css_ws
-    | CSS_Colon css_ws
-    | CSS_Function_ css_ws ( any_ | unused)* CSS_CloseParen css_ws
-    | CSS_OpenParen css_ws ( any_ | unused)* CSS_CloseParen css_ws
-    | CSS_OpenBracket css_ws ( any_ | unused)* CSS_CloseBracket css_ws
+    : css_ident css_ws #anyIdent
+    | css_number css_ws #anyNumber
+    | css_percentage css_ws #anyPercent
+    | CSS_Dimension css_ws #anyDim
+    | CSS_String_ css_ws #anyString
+    | css_url css_ws #anyUrl
+    | CSS_Hash css_ws #anyHash
+    | CSS_UnicodeRange css_ws #anyUnicode
+    | CSS_Includes css_ws #anyInclude
+    | CSS_DashMatch css_ws #anyDashMatch
+    | CSS_Colon css_ws #anyColon
+    | CSS_Function_ css_ws (any_ | unused)* CSS_CloseParen css_ws #anyFunc
+    | CSS_OpenParen css_ws (any_ | unused)* CSS_CloseParen css_ws #anyParen
+    | CSS_OpenBracket css_ws (any_ | unused)* CSS_CloseBracket css_ws #anyBrackets
     ;
 
+
 atRule
-    : CSS_AtKeyword css_ws any_* (block | CSS_SemiColon css_ws) # unknownAtRule
+    : CSS_AtKeyword css_ws any_* (block | CSS_SemiColon css_ws) #atRuleUnknown
     ;
 
 unused
-    : block
-    | CSS_AtKeyword css_ws
-    | CSS_SemiColon css_ws
-    | CSS_Cdo css_ws
-    | CSS_Cdc css_ws
-    ;
+     : block #unusedBlock
+     | CSS_AtKeyword css_ws #unusedAt
+     | CSS_SemiColon css_ws #unusedSemi
+     | CSS_Cdo css_ws #unusedCdo
+     | CSS_Cdc css_ws #unusedCdc
+     ;
+
 
 block
-    : CSS_OpenBrace css_ws (declarationList | nestedStatement | any_ | block | CSS_AtKeyword css_ws | CSS_SemiColon css_ws)* CSS_CloseBrace css_ws
-    ;
+   : CSS_OpenBrace css_ws (declarationList | nestedStatement | any_ | block | CSS_AtKeyword css_ws | CSS_SemiColon css_ws)* CSS_CloseBrace css_ws #blockRule
+   ;
 
 nestedStatement
-    : ruleset
-    | media
-    | page
-    | fontFaceRule
-    | keyframesRule
-    | supportsRule
-    | viewport
-    | counterStyle
-    | fontFeatureValuesRule
-    | atRule
-    ;
+     : ruleset #nestRuleset
+     | media #nestMedia
+     | page #nestPage
+     | fontFaceRule #nestFontFace
+     | keyframesRule #nestKeyframes
+     | supportsRule #nestSupports
+     | viewport #nestViewport
+     | counterStyle #nestCounter
+     | fontFeatureValuesRule #nestFontFeature
+     | atRule #nestAtRule
+     ;
+
 
 groupRuleBody
-    : CSS_OpenBrace css_ws nestedStatement* CSS_CloseBrace css_ws
-    ;
+       : CSS_OpenBrace css_ws nestedStatement* CSS_CloseBrace css_ws #groupBody
+        ;
+
 
 supportsRule
-    : CSS_Supports css_ws supportsCondition css_ws groupRuleBody
+    : CSS_Supports css_ws supportsCondition css_ws groupRuleBody #supportsRuleLabel
     ;
 
 supportsCondition
@@ -425,10 +434,11 @@ supportsCondition
     ;
 
 supportsConditionInParens
-    : CSS_OpenParen css_ws supportsCondition css_ws CSS_CloseParen
-    | supportsDeclarationCondition
-    | generalEnclosed
-    ;
+     : CSS_OpenParen css_ws supportsCondition css_ws CSS_CloseParen #supportParen
+     | supportsDeclarationCondition #supportDeclCond
+     | generalEnclosed #supportGeneral
+     ;
+
 
 supportsNegation
     : CSS_Not css_ws CSS_Space css_ws supportsConditionInParens
@@ -447,36 +457,29 @@ supportsDeclarationCondition
     ;
 
 generalEnclosed
-    : (CSS_Function_ | CSS_OpenParen) (any_ | unused)* CSS_CloseParen
-    ;
+ : (CSS_Function_ | CSS_OpenParen) (any_ | unused)* CSS_CloseParen #generalEnclosedRule
+ ;
 
-var_
-    : VAR css_ws CSS_Variable css_ws CSS_CloseParen css_ws
-    ;
+var_ : VAR css_ws CSS_Variable css_ws CSS_CloseParen css_ws #varRule ;
 
-calc
-    : CALC css_ws calcSum CSS_CloseParen css_ws
-    ;
+calc : CALC css_ws calcSum CSS_CloseParen css_ws #calcRule ;
 
-calcSum
-    : calcProduct (CSS_Space css_ws ( CSS_Plus | CSS_Minus) css_ws CSS_Space css_ws calcProduct)*
-    ;
+calcSum :
+ calcProduct (CSS_Space css_ws (CSS_Plus | CSS_Minus) css_ws CSS_Space css_ws calcProduct)* #calcSumRule ;
 
-calcProduct
-    : calcValue (CSS_Multiply css_ws calcValue | CSS_Divide css_ws css_number css_ws)*
-    ;
+
+calcProduct : calcValue (CSS_Multiply css_ws calcValue | CSS_Divide css_ws css_number css_ws)* #calcProdRule ;
 
 calcValue
-    : css_number css_ws
-    | CSS_Dimension css_ws
-    | CSS_Dimension css_ws
-    | CSS_Percentage css_ws
-    | CSS_OpenParen css_ws calcSum CSS_CloseParen css_ws
-    ;
+   : css_number css_ws #calcValNum
+   | CSS_Dimension css_ws #calcValDim
+   | CSS_Percentage css_ws #calcValPercent
+   | CSS_OpenParen css_ws calcSum CSS_CloseParen css_ws #calcValParen
+   ;
 
 fontFaceRule
-    : CSS_FontFace css_ws CSS_OpenBrace css_ws fontFaceDeclaration? (CSS_SemiColon css_ws fontFaceDeclaration?)* CSS_CloseBrace css_ws
-    ;
+: CSS_FontFace css_ws CSS_OpenBrace css_ws fontFaceDeclaration? (CSS_SemiColon css_ws fontFaceDeclaration?)* CSS_CloseBrace css_ws #fontFaceRuleLabel
+;
 
 fontFaceDeclaration
     : property_ CSS_Colon css_ws expr  # knownFontFaceDeclaration
@@ -507,14 +510,12 @@ fontFeatureValuesRule
     : CSS_FontFeatureValues css_ws fontFamilyNameList css_ws CSS_OpenBrace css_ws featureValueBlock* CSS_CloseBrace css_ws
     ;
 
-fontFamilyNameList
-    : fontFamilyName (css_ws CSS_Comma css_ws fontFamilyName)*
-    ;
+fontFamilyNameList : fontFamilyName (css_ws CSS_Comma css_ws fontFamilyName)* #ffNameList ;
 
 fontFamilyName
-    : CSS_String_
-    | css_ident ( css_ws css_ident)*
-    ;
+   : CSS_String_ #ffNameStr
+   | css_ident (css_ws css_ident)* #ffNameIdent ;
+
 
 featureValueBlock
     : featureType css_ws CSS_OpenBrace css_ws featureValueDefinition? (css_ws CSS_SemiColon css_ws featureValueDefinition?)* CSS_CloseBrace css_ws
