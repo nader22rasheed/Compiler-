@@ -197,7 +197,7 @@ fragment SPACES: [ \t]+;
 
 fragment COMMENT: '#' ~[\r\n\f]*;
 
-fragment LINE_JOINING: '\\' SPACES? ( '\r'? '\n' | '\r' | '\f');
+fragment LINE_JOINING: '\\' SPACES? ( '\r'? '\n' | '\r' | '\f'| ' ');
 
 
 fragment UNICODE_OIDS: '\u1885' ..'\u1886' | '\u2118' | '\u212e' | '\u309b' ..'\u309c';

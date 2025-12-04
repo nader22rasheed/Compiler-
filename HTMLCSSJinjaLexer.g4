@@ -200,7 +200,7 @@ CSS_DxImageTransform: 'progid:DXImageTransform.Microsoft.' CSS_Function_ ;
 
 CSS_Variable: '--' CSS_Nmstart CSS_Nmchar*;
 
-CSS_Ident: '-'? CSS_Nmstart CSS_Nmchar*;
+CSS_Ident: ~[{}<>%]+ ;
 
 CSS_Function_: CSS_Ident '(';
 
@@ -296,6 +296,8 @@ fragment CSS_Y: 'y' | 'Y' | '\\' CSS_ZeroToFourZeros ('59' | '79') CSS_NewlineOr
 
 fragment CSS_Z: 'z' | 'Z' | '\\' CSS_ZeroToFourZeros ('5a' | '7a') CSS_NewlineOrSpace | '\\z' | '\\Z';
 
+
+
 mode ATTVALUE;
 
 // an attribute value may have spaces b/t the '=' and the value
@@ -340,7 +342,7 @@ JINJA_WS: [ \t] -> skip;
 
 JINJA_NEWLINE: [\r\n]+;
 
-JINJA_ID: [a-z] [a-zA-Z0-9_]* ;
+
 
 JINJA_INT: '-'? [0-9]+ ;
 
@@ -401,3 +403,5 @@ JINJA_BLOCK_END : '%}' -> popMode ;
 JINJA_EXPR_END : '}}' -> popMode ;
 
 JINJA_SYMBOLS: ( '_'  | '/' | ';' | '="' | '"' ) ;
+
+JINJA_ID: [a-z] [a-zA-Z0-9_]* ;

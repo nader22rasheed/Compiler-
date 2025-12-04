@@ -23,7 +23,7 @@ scriptletOrSeaWs
     ;
 
 htmlElements
-    : htmlMisc* htmlElement htmlMisc* #htmlElems
+    : htmlMisc* htmlElement htmlMisc* EOF #htmlElems
     ;
 
 htmlElement
@@ -91,13 +91,13 @@ jinja_block
     ;
 
 jinja_block_content
-    : assignment_statement  #blkAssign
-    | if_fragment #blkIf
+    :  if_fragment #blkIf
     | elif_fragment #blkElif
     | else_fragment #blkElse
     | endif_fragment  #blkEndIf
     | while_fragment #blkWhile
     | endwhile_fragment #blkEndWhile
+    |  assignment_statement  #blkAssign
     ;
 
 assignment_statement
@@ -131,33 +131,31 @@ if_statement
 
 elif_statement: elif_fragment code_block (elif_statement | else_statement)? #elifStmt  ;
 
-else_statement: else_fragment code_block ;
+else_statement: else_fragment code_block  #elseStmt;
 
-if_fragment: JINJA_IF JINJA_LPAREN boolean_expression JINJA_RPAREN JINJA_NEWLINE? ;
+if_fragment: JINJA_IF JINJA_LPAREN boolean_expression JINJA_RPAREN JINJA_NEWLINE? #ifFrg ;
 
-elif_fragment: JINJA_ELIF JINJA_LPAREN boolean_expression JINJA_RPAREN JINJA_NEWLINE?;
+elif_fragment: JINJA_ELIF JINJA_LPAREN boolean_expression JINJA_RPAREN JINJA_NEWLINE?  #elifFrg;
 
-else_fragment: JINJA_ELSE JINJA_NEWLINE? ;
+else_fragment: JINJA_ELSE JINJA_NEWLINE? #elseFrg ;
 
-endif_fragment: JINJA_ENDIF JINJA_NEWLINE?;
+endif_fragment: JINJA_ENDIF JINJA_NEWLINE? #endifFrg;
 
-code_block: JINJA_NEWLINE? htmlContent JINJA_NEWLINE?;
+code_block: JINJA_NEWLINE? htmlContent JINJA_NEWLINE? #codeblock;
 
-while_statement: while_fragment statement*? endwhile_fragment ;
+while_statement: while_fragment statement*? endwhile_fragment  #whileStmt;
 
-while_fragment: JINJA_WHILE JINJA_LPAREN boolean_expression JINJA_RPAREN JINJA_NEWLINE? ;
+while_fragment: JINJA_WHILE JINJA_LPAREN boolean_expression JINJA_RPAREN JINJA_NEWLINE? #whileFrg;
 
-endwhile_fragment: JINJA_ENDWHILE JINJA_NEWLINE?;
+endwhile_fragment: JINJA_ENDWHILE JINJA_NEWLINE? #endwhileFrg;
 
 
 
 
 // AST.CSS parser rules
 
-stylesheet
-    : css_ws (charset ( CSS_Comment | CSS_Space | CSS_Cdo | CSS_Cdc)*)* (imports ( CSS_Comment | CSS_Space | CSS_Cdo | CSS_Cdc)*)* (
-        namespace_ ( CSS_Comment | CSS_Space | CSS_Cdo | CSS_Cdc)*
-    )* (nestedStatement ( CSS_Comment | CSS_Space | CSS_Cdo | CSS_Cdc)*)* EOF #stylesheetRule
+stylesheet:
+(  charset| imports|  nestedStatement |. )*?  #stylesheetRule
     ;
 
 charset
