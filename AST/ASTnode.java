@@ -26,4 +26,8 @@ public abstract class ASTnode {
     public String toString() {
         return nodeName + " (Line: " + lineNumber + ")";
     }
+
+    protected void printIndent(int indent) {
+        for (int i = 0; i < indent; i++) System.out.print("  ");
+    }
 }
