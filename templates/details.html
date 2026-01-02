@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>تفاصيل المنتج</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>تفاصيل المنتج</h1>
+        <a class="btn" href="{{ url_for('index') }}">رجوع للقائمة</a>
+    </header>
+
+    {% if product %}
+    <section class="product-detail">
+        <div class="image-wrap">
+            {% if product['image'] %}
+            <img src="{{ product['image'] }}" alt="{{ product['name'] }}">
+            {% else %}
+            <div class="placeholder large">صورة</div>
+            {% endif %}
+        </div>
+        <div class="info">
+            <h2>{{ product['name']|default('اسم غير معروف') }}</h2>
+            <p class="desc">{{ product['description']|default('لا يوجد وصف') }}</p>
+            <p class="price">السعر: <strong>{{ product['price']|default(0) }} ر.س</strong></p>
+        </div>
+    </section>
+    {% else %}
+    <div class="empty">
+        <p>المنتج غير موجود.</p>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>

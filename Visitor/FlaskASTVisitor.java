@@ -2,6 +2,8 @@ package Visitor;
 
 import AST.ASTnode;
 import AST.Flask.*;
+import AST.JINJA.CodeBlockNode;
+import AST.JINJA.IfExpressionNode;
 import antlr.FlaskParser;
 import antlr.FlaskParserBaseVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -157,22 +159,20 @@ public class FlaskASTVisitor extends FlaskParserBaseVisitor<ASTnode> {
     // -------------------- Expressions --------------------
     @Override
     public ASTnode visitTest(FlaskParser.TestContext ctx) {
-        if (ctx.IF() != null) {
-            ASTnode node = new ASTnode("IfExpr", ctx.getStart().getLine()) {
-                @Override
-                public void print(int indent) {
 
-                }
-            };
-            node.addChild(visit(ctx.or_test(0)));
-            node.addChild(visit(ctx.test(0)));
-            node.addChild(visit(ctx.test(1)));
-            return node;
-        } else if (ctx.lambdef() != null) {
-            return visit(ctx.lambdef());
-        } else {
+        // test : or_test
+        if (ctx.or_test().size() == 1) {
             return visit(ctx.or_test(0));
         }
+
+        // test : or_test IF or_test ELSE test
+        IfExpressionNode node = new IfExpressionNode(ctx.getStart().getLine());
+
+        node.addChild(visit(ctx.or_test(0))); // a
+        node.addChild(visit(ctx.or_test(1))); // b
+        node.addChild(visit(ctx.test()));     // c
+
+        return node;
     }
 
     @Override

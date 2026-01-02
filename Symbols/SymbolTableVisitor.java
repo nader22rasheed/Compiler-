@@ -17,9 +17,14 @@ public class SymbolTableVisitor {
 
         if (node instanceof StmtAssignNode) {
             visitStmtAssign((StmtAssignNode) node);
-        } else if (node instanceof IfStatementNode) {
+        }
+        else if (node instanceof IfStatementNode) {
             visitIfStatement((IfStatementNode) node);
-        } else if (node instanceof CodeBlockNode) {
+        }
+        else if (node instanceof WhileStatementNode) {
+            visitWhileStatement((WhileStatementNode) node);
+        }
+        else if (node instanceof CodeBlockNode) {
             visitCodeBlock((CodeBlockNode) node);
         }
     }
@@ -27,10 +32,12 @@ public class SymbolTableVisitor {
     private void visitStmtAssign(StmtAssignNode node) {
         AssignmentNode a = node.assign;
 
+        String type = inferType(a.value);
+
         symbols.insert(
                 a.variable,
                 "variable",
-                "unknown",
+                type,
                 a.getLineNumber(),
                 0
         );
@@ -71,6 +78,24 @@ public class SymbolTableVisitor {
         for (ASTnode child : node.getChildren()) {
             visit(child);
         }
+    }
+    private String inferType(ASTnode expr) {
+
+        if (expr instanceof EqIntNode) {
+            return "int";
+        }
+
+        if (expr instanceof EqStrNode) {
+            return "string";
+        }
+
+        if (expr instanceof EqVarNode) {
+            EqVarNode v = (EqVarNode) expr;
+            Symbol s = symbols.lookup(v.name);
+            if (s != null) return s.getType();
+        }
+
+        return "unknown";
     }
 
 }

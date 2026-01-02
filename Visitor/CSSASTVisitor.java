@@ -12,18 +12,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 public class CSSASTVisitor extends HTMLCSSJinjaParserBaseVisitor<ASTnode> {
 
 
-//    @Override
-//    public ASTnode visitStylesheetRule(HTMLCSSJinjaParser.StylesheetRuleContext ctx) {
-//        StylesheetNode node = new StylesheetNode(ctx.getStart().getLine());
-//
-//        for (var c : ctx.children) {
-//            ASTnode child = (ASTnode) visit(c);
-//            if (child != null)
-//                node.addChild(child);
-//        }
-//        return node;
-//    }
-
     @Override
     public ASTnode visitGoodCharset(HTMLCSSJinjaParser.GoodCharsetContext ctx) {
         return new CharsetNode(
@@ -147,114 +135,8 @@ public class CSSASTVisitor extends HTMLCSSJinjaParserBaseVisitor<ASTnode> {
                 inner
         );
     }
-//    @Override
-//    public ASTnode visitClassSelectorRule(HTMLCSSJinjaParser.ClassSelectorRuleContext ctx) {
-//        String className = ctx.getText().substring(1); // نشيل '.'
-//
-//        return new ClassSelectorNode(
-//                ctx.getStart().getLine(),
-//                className
-//        );
-//    }
-//@Override
-//public ASTnode visitClassSelectorRule(HTMLCSSJinjaParser.ClassSelectorRuleContext ctx) {
-//    return new ClassSelectorNode(
-//            ctx.getStart().getLine(),
-//            ctx.css_ident().getText()
-//    );
-//}
-//@Override
-//public ASTnode visitCombinator(HTMLCSSJinjaParser.CombinatorContext ctx) {
-//
-//    CombinatorNode.Type type;
-//
-//    if (ctx.CSS_Greater() != null) {
-//        type = CombinatorNode.Type.CHILD;                 // >
-//    } else if (ctx.CSS_Plus() != null) {
-//        type = CombinatorNode.Type.ADJACENT_SIBLING;       // +
-//    } else if (ctx.CSS_Tilde() != null) {
-//        type = CombinatorNode.Type.GENERAL_SIBLING;        // ~
-//    } else if (ctx.CSS_Pipe() != null) {
-//        type = CombinatorNode.Type.COLUMN;                 // ||
-//    } else {
-//        type = CombinatorNode.Type.DESCENDANT;             // space
-//    }
-//
-//    return new CombinatorNode(
-//            ctx.getStart().getLine(),
-//            type
-//    );
-//}
 
-//    @Override
-//    public ASTnode visitDeclList(HTMLCSSJinjaParser.DeclListContext ctx) {
-//        DeclarationListNode node =
-//                new DeclarationListNode(ctx.getStart().getLine());
-//
-//        for (var declCtx : ctx.declaration()) {
-//            DeclarationNode decl = (DeclarationNode) visit(declCtx);
-//            if (decl != null) {
-//                node.addDeclaration(decl);
-//            }
-//        }
-//
-//        return node;
-//    }
-//@Override
-//public ASTnode visitKnownDeclaration(HTMLCSSJinjaParser.KnownDeclarationContext ctx) {
-//    String prop = ctx.property_().getText();
-//    ExprNode expr = (ExprNode) visit(ctx.expr());
-//    boolean important = ctx.prio() != null;
-//
-//    return new DeclarationNode(
-//            ctx.getStart().getLine(),
-//            prop,
-//            expr,
-//            important
-//    );
-//}
-//@Override
-//public ASTnode visitUnknownDeclaration(HTMLCSSJinjaParser.UnknownDeclarationContext ctx) {
-//    String prop = ctx.property_().getText();
-//    ExprNode expr = (ExprNode) visit(ctx.value());
-//    boolean important = false;
-//
-//    return new DeclarationNode(
-//            ctx.getStart().getLine(),
-//            prop,
-//            expr,
-//            important
-//    );
-//}
-//@Override
-//public ASTnode visitExprRule(HTMLCSSJinjaParser.ExprRuleContext ctx) {
-//    ExprNode node = new ExprNode(ctx.getStart().getLine());
-//
-//    TermNode firstTerm = (TermNode) visit(ctx.term(0));
-//    node.terms.add(firstTerm);
-//    node.addChild(firstTerm);
-//
-//    int termIndex = 1;
-//
-//    for (var child : ctx.children) {
-//        String text = child.getText();
-//
-//        if (text.equals("+") || text.equals("-") || text.equals("/") || text.equals("*")) {
-//            OperatorNode op = new OperatorNode(ctx.getStart().getLine(), text);
-//            node.operators.add(op);
-//            node.addChild(op);
-//
-//            if (termIndex < ctx.term().size()) {
-//                TermNode t = (TermNode) visit(ctx.term(termIndex));
-//                node.terms.add(t);
-//                node.addChild(t);
-//                termIndex++;
-//            }
-//        }
-//    }
-//
-//    return node;
-//}
+
 @Override
 public ASTnode visitKnownFontFaceDeclaration(HTMLCSSJinjaParser.KnownFontFaceDeclarationContext ctx) {
     String prop = ctx.property_().getText();
@@ -341,14 +223,14 @@ public ASTnode visitKnownFontFaceDeclaration(HTMLCSSJinjaParser.KnownFontFaceDec
             if (child instanceof TerminalNode t &&
                     t.getSymbol().getType() == HTMLCSSJinjaParser.CSS_Hash) {
 
-                String id = t.getText().substring(1); // إزالة #
+                String id = t.getText().substring(1);
                 node.addChild(new IdSelectorNode(
                         ctx.getStart().getLine(),
                         id
                 ));
             }
 
-            // باقي الأنواع
+
             else {
                 ASTnode sel = (ASTnode) visit(child);
                 if (sel != null) {
@@ -372,7 +254,7 @@ public ASTnode visitKnownFontFaceDeclaration(HTMLCSSJinjaParser.KnownFontFaceDec
             url = ctx.css_url().getText();
         }
 
-        // mediaQueryList (اختياري)
+
         if (ctx.mediaQueryList() != null) {
             media = (MediaQueryListNode) visit(ctx.mediaQueryList());
         }
@@ -456,28 +338,6 @@ public ASTnode visitKnownFontFaceDeclaration(HTMLCSSJinjaParser.KnownFontFaceDec
 
         return node;
     }
-//    @Override
-//    public ASTnode visitLayerRuleLabel(
-//            HTMLCSSJinjaParser.LayerRuleLabelContext ctx) {
-//
-//        LayerNode node =
-//                new LayerNode(ctx.getStart().getLine());
-//
-//        // أسماء layers
-//        for (var id : ctx.css_ident()) {
-//            node.names.add(id.getText());
-//        }
-//
-//        // body اختياري
-//        if (ctx.groupRuleBody() != null) {
-//            GroupRuleBodyNode body =
-//                    (GroupRuleBodyNode) visit(ctx.groupRuleBody());
-//            node.body = body;
-//            node.addChild(body);
-//        }
-//
-//        return node;
-//    }
 
     @Override
     public ASTnode visitMediaExpression(
@@ -517,40 +377,6 @@ public ASTnode visitKnownFontFaceDeclaration(HTMLCSSJinjaParser.KnownFontFaceDec
         );
     }
 
-//    @Override
-//    public ASTnode visitMedia(
-//            HTMLCSSJinjaParser.MediaContext ctx) {
-//
-//        MediaQueryListNode node =
-//                new MediaQueryListNode(ctx.getStart().getLine());
-//
-//        for (var child : ctx.children) {
-//            ASTnode q = (ASTnode) visit(child);
-//            if (q instanceof MediaQueryNode) {
-//                node.addQuery((MediaQueryNode) q);
-//            }
-//        }
-//
-//        return node;
-//    }
-
-//    @Override
-//    public ASTnode visitMedia(
-//            HTMLCSSJinjaParser.MediaContext ctx) {
-//
-//        MediaQueryListNode node =
-//                new MediaQueryListNode(ctx.getStart().getLine());
-//
-//        for (var child : ctx.children) {
-//            Object v = visit(child);
-//
-//            if (v instanceof MediaQueryNode) {
-//                node.addQuery((MediaQueryNode) v);
-//            }
-//        }
-//
-//        return node;
-//    }
 
     @Override
     public ASTnode visitGoodNamespace(
@@ -583,44 +409,7 @@ public ASTnode visitKnownFontFaceDeclaration(HTMLCSSJinjaParser.KnownFontFaceDec
         );
     }
 
-
-//    @Override
-//    public ASTnode visitBadNamespace(
-//            HTMLCSSJinjaParser.BadNamespaceContext ctx) {
-//
-//        return new NamespaceNode(
-//                ctx.getStart().getLine(),
-//                null,
-//                ctx.getText(),
-//                false
-//        );
-//    }
-//
-//
-//    public ASTnode visitGoodNamespace(
-//            HTMLCSSJinjaParser.GoodNamespaceContext ctx) {
-//
-//        String prefix = null;
-//        String url = null;
-//
-//        if (ctx.css_ident() != null) {
-//            prefix = ctx.css_ident().getText();
-//        }
-//
-//        if (ctx.CSS_String() != null) {
-//            url = ctx.CSS_String().getText();
-//        } else if (ctx.CSS_Url() != null) {
-//            url = ctx.CSS_Url().getText();
-//        }
-//
-//        return new NamespaceNode(
-//                ctx.getStart().getLine(),
-//                prefix,
-//                url,
-//                true
-//        );
-//    }
-@Override
+    @Override
 public ASTnode visitPseudoPage(HTMLCSSJinjaParser.PseudoPageContext ctx) {
 
     String name = ctx.css_ident().getText();
@@ -660,7 +449,7 @@ public ASTnode visitPseudoPage(HTMLCSSJinjaParser.PseudoPageContext ctx) {
 
         return new RulesetNode(
                 ctx.getStart().getLine(),
-                null,   // ما عندو selectors معروفين
+                null,
                 declarations
         );
     }
@@ -670,12 +459,11 @@ public ASTnode visitPseudoPage(HTMLCSSJinjaParser.PseudoPageContext ctx) {
         SelectorListNode list =
                 new SelectorListNode(ctx.getStart().getLine());
 
-        // أول selector
+
         list.addSelector(
                 (SelectorNode) visit(ctx.selector(0))
         );
 
-        // باقي selectors بعد الفواصل
         for (int i = 1; i < ctx.selector().size(); i++) {
             list.addSelector(
                     (SelectorNode) visit(ctx.selector(i))
@@ -690,13 +478,12 @@ public ASTnode visitPseudoPage(HTMLCSSJinjaParser.PseudoPageContext ctx) {
         SelectorNode selector =
                 new SelectorNode(ctx.getStart().getLine());
 
-        // أول simpleSelectorSequence (بدون combinator)
+
         SimpleSelectorSequenceNode firstSeq =
                 (SimpleSelectorSequenceNode) visit(ctx.simpleSelectorSequence(0));
 
         selector.addSequence(firstSeq, null);
 
-        // باقي sequences مع combinators
         int seqIndex = 1;
         for (int i = 0; i < ctx.combinator().size(); i++) {
 
@@ -728,7 +515,7 @@ public ASTnode visitPseudoPage(HTMLCSSJinjaParser.PseudoPageContext ctx) {
             seq.add((SimpleSelectorNode) visit(ctx.universal()));
         }
 
-        // باقي الـ selectors
+
         for (var child : ctx.children) {
             ASTnode n = (ASTnode) visit(child);
             if (n instanceof SimpleSelectorNode) {
@@ -738,22 +525,6 @@ public ASTnode visitPseudoPage(HTMLCSSJinjaParser.PseudoPageContext ctx) {
 
         return seq;
     }
-//    @Override
-//    public ASTnode visitSimpleSeq2(HTMLCSSJinjaParser.SimpleSeq2Context ctx) {
-//
-//        SimpleSelectorSequenceNode seq =
-//                new SimpleSelectorSequenceNode(ctx.getStart().getLine());
-//
-//        for (var child : ctx.children) {
-//            ASTnode n = (ASTnode) visit(child);
-//            if (n instanceof SimpleSelectorNode) {
-//                seq.add((SimpleSelectorNode) n);
-//            }
-//        }
-//
-//        return seq;
-//    }
-
 
     @Override
     public ASTnode visitStylesheetRule(HTMLCSSJinjaParser.StylesheetRuleContext ctx) {
@@ -816,14 +587,11 @@ public ASTnode visitPseudoPage(HTMLCSSJinjaParser.PseudoPageContext ctx) {
         String namespace = null;
         String name;
 
-        // element name (إجباري)
         name = ctx.elementName().getText();
 
-        // namespace (اختياري)
         if (ctx.typeNamespacePrefix() != null) {
             String nsText = ctx.typeNamespacePrefix().getText();
 
-            // نشيل الـ |
             namespace = nsText.substring(0, nsText.length() - 1);
         }
 
@@ -889,7 +657,7 @@ public ASTnode visitPseudoPage(HTMLCSSJinjaParser.PseudoPageContext ctx) {
     public ASTnode visitVarRule(HTMLCSSJinjaParser.VarRuleContext ctx) {
         int line = ctx.getStart().getLine();
 
-        // اسم المتغير (مثل --main-color)
+
         String name = ctx.CSS_Variable().getText();
 
         return new VarNode(line, name);
