@@ -1,0 +1,14 @@
+from flask import Flask, render_template
+app = Flask(__name__)
+
+products = [
+    {"id": 1, "name": "Apple", "price": 1.2},
+    {"id": 2, "name": "Banana", "price": 0.8},
+]
+
+@app.route("/")
+def index():
+    return render_template("display_products.html", products=products)
+
+if __name__ == "__main__":
+    app.run(debug=True)

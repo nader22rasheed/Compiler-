@@ -1,0 +1,13 @@
+<!-- display_products.txt -->
+<html>
+ <body>
+ <h1>Products</h1>
+ {% for p in products %}
+ <div class="product">
+ <h2>{{ p.name }}</h2>
+ <p>Price: {{ p.price }}</p>
+ <img src="{{ p.image }}" alt="{{ p.name }}" />
+ </div>
+ {% endfor %}
+ </body>
+</html>

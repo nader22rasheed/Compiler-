@@ -1,0 +1,4 @@
+<!-- delete_snippet.txt -->
+<form action="/delete/{{ item.id }}" method="post">
+  <button type="submit" class="btn btn-danger">Delete</button>
+</form>

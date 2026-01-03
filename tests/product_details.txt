@@ -1,0 +1,12 @@
+<!-- product_details.txt -->
+<html>
+ <body>
+ <h1>Product Details</h1>
+ <div class="product">
+ <h2>{{ product.name }}</h2>
+ <p>Price: {{ product.price }}</p>
+ <p>{{ product.description }}</p>
+ <img src="{{ product.image }}" alt="{{ product.name }}" />
+ </div>
+ </body>
+</html>

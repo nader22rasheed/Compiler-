@@ -1,0 +1,13 @@
+<!-- product_details.txt -->
+<html>
+ <body>
+ <h1>Product Details</h1>
+ <div class="product">
+   <h2>{{ product.name }}</h2>
+   <p>Price: {{ product.price }}</p>
+   <form action="/delete/{{ product.id }}" method="post">
+     <button type="submit">Delete</button>
+   </form>
+ </div>
+</body>
+</html>

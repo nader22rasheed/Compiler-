@@ -1,0 +1,15 @@
+<!-- display_products.txt -->
+<html>
+ <body>
+ <h1>Products</h1>
+ {% for p in products %}
+ <div class="product">
+   <h2>{{ p.name }}</h2>
+   <p>Price: {{ p.price }}</p>
+   <form action="/delete/{{ p.id }}" method="post">
+     <button type="submit">Delete</button>
+   </form>
+ </div>
+ {% endfor %}
+ </body>
+</html>
